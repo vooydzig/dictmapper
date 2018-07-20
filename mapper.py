@@ -21,9 +21,12 @@ class JSONMapper:
         target = self._get_empty_target_object(source)
         for src, dst, trans in self.mapping:
             matches = jsonpath_rw.parse(src).find(source)
-            if not matches or len(matches) > 1:
+            if not matches:
                 continue
-            value = trans(matches[0].value)
+            if len(matches) == 1:
+                value = trans(matches[0].value)
+            else:
+                value = [trans(m.value) for m in matches]
             if isinstance(jsonpath_rw.parse(dst), jsonpath_rw.Root):
                 target = self.set_root_value(target, value)
             else:
