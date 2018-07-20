@@ -24,18 +24,15 @@ class JSONMapper:
             if not matches or len(matches) > 1:
                 continue
             value = trans(matches[0].value)
-            if isinstance(target, dict):
-                self.set_value(target, jsonpath_rw.parse(dst), value)
+            if isinstance(jsonpath_rw.parse(dst), jsonpath_rw.Root):
+                target = self.set_root_value(target, value)
             else:
-                target = value
-                break
+                self.set_value(target, jsonpath_rw.parse(dst), value)
         return target
 
     def set_value(self, target, dest_path_expr, value=None):
         if hasattr(dest_path_expr, 'fields'):
             self._set_value_to_field(target, dest_path_expr.fields[0], value)
-        elif isinstance(dest_path_expr, jsonpath_rw.Root):
-            self._set_value_to_root(target, value)
         else:
             path, node = dest_path_expr.left, dest_path_expr.right
             if isinstance(node, jsonpath_rw.Slice):
@@ -49,11 +46,12 @@ class JSONMapper:
         else:
             self._merge_inputs(target, path, value)
 
-    def _set_value_to_root(self, target, value):
+    def set_root_value(self, target, value):
         try:
             target.update(value)
         except:
             target = value
+        return target
 
     def _merge_inputs(self, target, target_field, value):
         if isinstance(target[target_field], type(value)):
