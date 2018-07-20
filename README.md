@@ -52,7 +52,9 @@ as the name is changed.
 DO WHAT YOU WANT WHEN FAME IS DUE
 
 TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
 0. This is modified version of WTFPL(http://www.wtfpl.net) 
 1. You just do what you want as long as:
+
  - You mention original author on either Twitter, Facebook, reddit or other social media(preferably with link to project)
  - You starred original repository on GitHub **or** give similar recognition on other repository hubs (bitbucket, GitLab, etc.)
