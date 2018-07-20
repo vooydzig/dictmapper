@@ -56,6 +56,16 @@ class MapperTestCase(TestCase):
         self.assertListEqual(m.map({'foo': [0, 1, 2, 3]}), [0, 1, 2, 3])
         self.assertListEqual(m.map({'foo': [{'a': 1, 'b': 2}, {'c': 3, 'p': 0}]}), [{'a': 1, 'b': 2}, {'c': 3, 'p': 0}])
 
+    def test_two_items_to_root(self):
+        m = JSONMapper(mapping=[
+            Mapping(source='foo', destination='$', transform=None),
+            Mapping(source='bar', destination='$', transform=None),
+        ])
+        self.assertDictEqual(m.map({}), {})
+        self.assertDictEqual(m.map({'foo': {'a': 1}}), {'a': 1})
+        self.assertDictEqual(m.map({'bar': {'b': 2}}), {'b': 2})
+        self.assertDictEqual(m.map({'foo': {'a': 1}, 'bar': {'b': 2}}), {'a': 1, 'b': 2})
+
     def test_duplicate_mappings(self):
         m = JSONMapper(mapping=[
             Mapping(source='foo', destination='bar', transform=None),

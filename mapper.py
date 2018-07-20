@@ -34,6 +34,8 @@ class JSONMapper:
     def set_value(self, target, dest_path_expr, value=None):
         if hasattr(dest_path_expr, 'fields'):
             self._set_value_to_field(target, dest_path_expr.fields[0], value)
+        elif isinstance(dest_path_expr, jsonpath_rw.Root):
+            self._set_value_to_root(target, value)
         else:
             path, node = dest_path_expr.left, dest_path_expr.right
             if isinstance(node, jsonpath_rw.Slice):
@@ -46,6 +48,12 @@ class JSONMapper:
             target[path] = value
         else:
             self._merge_inputs(target, path, value)
+
+    def _set_value_to_root(self, target, value):
+        try:
+            target.update(value)
+        except:
+            target = value
 
     def _merge_inputs(self, target, target_field, value):
         if isinstance(target[target_field], type(value)):
