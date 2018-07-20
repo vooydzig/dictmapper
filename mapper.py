@@ -27,13 +27,32 @@ class JSONMapper:
 
     def set_value(self, target, dest_path_expr, value=None):
         if hasattr(dest_path_expr, 'fields'):
-            target[dest_path_expr.fields[0]] = value
+            self._set_value_to_field(target, dest_path_expr.fields[0], value)
         else:
             path, node = dest_path_expr.left, dest_path_expr.right
-            while hasattr(path, 'left'):
-                value = {node.fields[0]: value}
-                path, node = path.left, path.right
-            target[path.fields[0]] = {node.fields[0]: value}
+            if isinstance(node, jsonpath_rw.Slice):
+                self.set_value(target, path, value=[value])
+            else:
+                self.set_value(target, path, value={node.fields[0]: value})
+
+    def _set_value_to_field(self, target, path, value):
+        if target.get(path) is None:
+            target[path] = value
+        else:
+            self._merge_inputs(target, path, value)
+
+    def _merge_inputs(self, target, target_field, value):
+        if isinstance(target[target_field], type(value)):
+            try:
+                for item in target[target_field]:
+                    item.update(value[0])
+            except:
+                try:
+                    target[target_field].update(value)
+                except:
+                    target[target_field] = value
+        else:
+            target[target_field] = value
 
     def _get_empty_target_object(self, source):
         if not source:

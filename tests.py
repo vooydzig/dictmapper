@@ -5,10 +5,6 @@ from mapper import JSONMapper, Mapping
 
 class MapperTestCase(TestCase):
 
-    def test_can_create(self):
-        m = JSONMapper(mapping=[])
-        self.assertIsNotNone(m.mapping)
-
     def test_map_returns_dict(self):
         m = JSONMapper(mapping=[])
         self.assertDictEqual(m.map({}), {})
@@ -38,6 +34,22 @@ class MapperTestCase(TestCase):
         self.assertDictEqual(m.map({}), {})
         self.assertDictEqual(m.map({'foo': [0, 1, 2, 3]}), {'bar': 1})
 
+    def test_item_property_in_list_to_simple_value(self):
+        m = JSONMapper(mapping=[Mapping(source='foo[*].f', destination='bar', transform=None)])
+        self.assertDictEqual(m.map({}), {})
+        self.assertDictEqual(m.map({'foo': [{'f': 1}]}), {'bar': 1})
+
+    def test_item_property_in_list_to_another_property_in_list(self):
+        m = JSONMapper(mapping=[Mapping(source='foo[*].f', destination='bar[*].b', transform=None)])
+        self.assertDictEqual(m.map({}), {})
+        self.assertDictEqual(m.map({'foo': [{'f': 1}]}), {'bar': [{'b': 1}]})
+
+    def test_merge_lists(self):
+        m = JSONMapper(mapping=[Mapping(source='foo[*].f', destination='bar[*].b', transform=None),
+                                Mapping(source='foz[*].f', destination='bar[*].baz', transform=None)])
+        self.assertDictEqual(m.map({}), {})
+        self.assertDictEqual(m.map({'foo': [{'f': 1}], 'foz': [{'f': 2}]}), {'bar': [{'b': 1, 'baz': 2}]})
+
     def test_list_item_to_root(self):
         m = JSONMapper(mapping=[Mapping(source='foo', destination='$', transform=None)])
         self.assertDictEqual(m.map({}), {})
@@ -52,7 +64,7 @@ class MapperTestCase(TestCase):
 
         self.assertDictEqual(m.map({}), {})
         self.assertDictEqual(m.map({'foz': 1}), {'bar': 1})
-        self.assertDictEqual(m.map({'foo': 2}), {'bar': 2 })
+        self.assertDictEqual(m.map({'foo': 2}), {'bar': 2})
         self.assertDictEqual(m.map({'foo': 1, 'foz': 2}), {'bar': 2})
 
     def test_multiple_mappings(self):
