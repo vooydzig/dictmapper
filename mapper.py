@@ -7,13 +7,19 @@ Mapping = namedtuple('Mapping', ['source', 'destination', 'transform'])
 
 class JSONMapper:
     def __init__(self, mapping):
-        self.mapping = mapping
+        self.mapping = self._normalize_mapping(mapping)
+
+    def _normalize_mapping(self, mapping):
+        normalized = []
+        for src, dst, trans in mapping:
+            if trans is None:
+                trans = (lambda x: x)
+            normalized.append(Mapping(src, dst, trans))
+        return normalized
 
     def map(self, source):
         target = self._get_empty_target_object(source)
         for src, dst, trans in self.mapping:
-            if trans is None:
-                trans = (lambda x: x)
             matches = jsonpath_rw.parse(src).find(source)
             if not matches or len(matches) > 1:
                 continue
